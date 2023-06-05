@@ -1,5 +1,5 @@
 import requests
-import time
+import pickle
 import os
 
 YOUR_OPENWEATHERMAP_API_KEY = "6c9676cf98ccabb0fccf37ff740afc31"
@@ -35,7 +35,8 @@ def fetch_weather(city_name):
         return None
 
 
-def display_weather_info(weather_data):
+
+def display_weather_info(weather_data, temperature_model, humidity_model):
     if weather_data is None:
         return
 
@@ -52,6 +53,14 @@ def display_weather_info(weather_data):
     print("Description:", weather_description)
     print("Temperature:", temperature, "°C")
     print("Humidity:", humidity, "%")
+    
+    #! Errors are here!
+    # Predict upcoming temperature
+    next_temperature = temperature_model.predict([[temperature, humidity]])
+    print("Tomorrow's temperature prediction:", next_temperature[0], "°C")
+    
+    next_humidity = humidity_model.predict([[humidity, temperature]])
+    print("Tomorrow's Humidity prediction:", next_humidity[0], "%")
 
 
 def main():
@@ -63,8 +72,16 @@ def main():
         weather_data = fetch_weather(city_name)
 
         if weather_data:
+            
+            # loading Models
+            with open('temperature_model.pkl', 'rb') as file:
+                temperature_model = pickle.load(file)
+                
+            with open('temperature_model.pkl', 'rb') as file:
+                humidity_model = pickle.load(file)
+            
             os.system("cls" if os.name == "nt" else "clear")
-            display_weather_info(weather_data)
+            display_weather_info(weather_data, temperature_model, humidity_model)
         else:
             print(
                 "Failed to fetch weather data. Please check your input or try again later.")
@@ -78,3 +95,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
